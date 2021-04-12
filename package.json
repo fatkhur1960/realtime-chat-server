@@ -1,0 +1,23 @@
+{
+  "name": "ws-chat",
+  "version": "1.0.0",
+  "description": "Chat WebSocket",
+  "main": "src/server.ts",
+  "scripts": {
+    "start": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Fatkhur",
+  "license": "ISC",
+  "dependencies": {
+    "@ptkdev/logger": "^1.7.2",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.7",
+    "socket.io": "^4.0.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
+  }
+}
