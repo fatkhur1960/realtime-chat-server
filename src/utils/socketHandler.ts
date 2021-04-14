@@ -44,41 +44,24 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       if (user.role === 'SISWA') {
         onlineUsers = chatServer.onlineTeachers;
       }
-      socket.emit("statsLoaded", { rooms: chatServer.rooms.concat(privateChat.rooms), onlineUsers })
+      socket.emit("statsLoaded", { rooms: [], onlineUsers })
     })
 
     socket.on("join", (roomId: string) => {
-      let room = chatServer.getRoom(roomId);
-
-      if (room) {
-        room.joinRoom(user);
-        logger.info(`${user.name} join to room ${room.id}`);
-
-        socket.emit("joined", { users: room.users, messages: room.messages });
-        socket.join(room.id);
-      }
+      logger.info(`${user.name} join to room ${roomId}`);
+      socket.join(roomId);
     });
 
     socket.on("leave", (roomId: string) => {
-      let room = chatServer.getRoom(roomId);
-
-      if (room) {
-        logger.info(`${user.name} leave room '${room.id}'`);
-
-        room.leaveRoom(user.id);
-        socket.leave(roomId);
-      }
+      logger.info(`${user.name} leave room '${roomId}'`);
+      socket.leave(roomId);
     });
 
     socket.on(
       "sendMessage",
       ({ message, roomId }: { message: Message, roomId: string }) => {
-        const room = chatServer.getRoom(roomId);
-        if (room) {
-          room.sendMessage(message);
-          socket.broadcast.to(room.id).emit("message", message);
-          socket.broadcast.emit("roomUpdated", { rooms: chatServer.rooms.concat(privateChat.rooms) });
-        }
+        socket.broadcast.to(roomId).emit("message", message);
+        socket.broadcast.emit("roomUpdated", { rooms: [] });
       }
     );
 
@@ -137,9 +120,9 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       // send message to opponent socket id
       socket.to(opponent.id as string).emit("gotPrivateMessage", { message, user })
       // update opponent rooms
-      socket.to(opponent.id as string).emit("roomUpdated", { rooms: chatServer.rooms.concat(opponentPrivateChat.rooms), })
+      socket.to(opponent.id as string).emit("roomUpdated", { rooms: [] })
       // update current user rooms
-      socket.emit("roomUpdated", { rooms: chatServer.rooms.concat(privateChat.rooms) })
+      socket.emit("roomUpdated", { rooms: [] })
     });
 
     socket.on("privateTyping", (opponent: User) => {
@@ -147,11 +130,8 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
     });
 
     socket.on("typing", (roomId) => {
-      const room = chatServer.getRoom(roomId);
-      if (room) {
-        socket.broadcast.to(room.id).emit("typing", { roomId, who: user });
-        socket.broadcast.emit("bcTyping", { roomId, who: user });
-      }
+      socket.broadcast.to(roomId).emit("typing", { roomId, who: user });
+      socket.broadcast.emit("bcTyping", { roomId, who: user });
     });
 
     socket.on("disconnect", (reason) => {
