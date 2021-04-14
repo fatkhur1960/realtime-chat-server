@@ -91,6 +91,16 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       }
     });
 
+    socket.on("resetCount", (opponentId: string) => {
+      const room = privateChat.getRoom(opponentId)
+      if (room) {
+        if (room.unreadCount > 0) {
+          room.resetUnreadCount()
+          socket.emit("roomUpdated", { rooms: chatServer.rooms.concat(privateChat.rooms) })
+        }
+      }
+    });
+
     socket.on("getSocketId", ({ idCard, role }: { idCard: string, role: string }) => {
       var user: User;
       if (role === 'Guru' || role === 'BK') {
