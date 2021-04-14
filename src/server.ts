@@ -13,7 +13,7 @@ const io = new socketio.Server(server);
 const logger = new Logger();
 const chatServer = new ChatServer(initRooms());
 
-const port = 8888;
+const port = process.env.PORT || 8888;
 
 handleSocket(io, chatServer, logger)
 
