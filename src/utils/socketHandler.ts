@@ -28,7 +28,7 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
           privateChat = chatServer.addPrivateChatByUserId(user.idCard);
         }
 
-        if (user.role === "Guru" || user.role === "BK") {
+        if (user.role === "GURU" || user.role === "BK") {
           socket.broadcast.emit("teacherOnline", user);
           chatServer.addTeacher(user)
         } else {
@@ -41,7 +41,7 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
     socket.on("getStats", () => {
       logger.info(`${user.name} request stats`);
       var onlineUsers = chatServer.onlineStudents;
-      if (user.role === 'Siswa') {
+      if (user.role === 'SISWA') {
         onlineUsers = chatServer.onlineTeachers;
       }
       socket.emit("statsLoaded", { rooms: chatServer.rooms.concat(privateChat.rooms), onlineUsers })
@@ -62,10 +62,12 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
     socket.on("leave", (roomId: string) => {
       let room = chatServer.getRoom(roomId);
 
-      logger.info(`${user.name} leave room '${room.id}'`);
+      if (room) {
+        logger.info(`${user.name} leave room '${room.id}'`);
 
-      room.leaveRoom(user.id);
-      socket.leave(roomId);
+        room.leaveRoom(user.id);
+        socket.leave(roomId);
+      }
     });
 
     socket.on(
@@ -103,7 +105,7 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
 
     socket.on("getSocketId", ({ idCard, role }: { idCard: string, role: string }) => {
       var user: User;
-      if (role === 'Guru' || role === 'BK') {
+      if (role === 'GURU' || role === 'BK') {
         user = chatServer.onlineTeachers.find((u) => u.idCard === idCard)
       } else {
         user = chatServer.onlineStudents.find((u) => u.idCard === idCard)
@@ -160,7 +162,7 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
 
       logger.warning(`${user.name} disconnect with reason ${reason}`);
 
-      if (user.role === "Guru" || user.role === "BK") {
+      if (user.role === "GURU" || user.role === "BK") {
         socket.broadcast.emit("teacherOffline", user);
         chatServer.removeTeacher(user)
       } else {
