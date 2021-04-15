@@ -121,10 +121,12 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
     });
 
     socket.on("disconnect", (reason) => {
-      chatServer.rooms.forEach((room) => {
-        const index = room.users.findIndex((r) => r.id == user.id);
-        room.users.splice(index, 1);
-      });
+      //chatServer.rooms.forEach((room) => {
+      //  const index = room.users.findIndex((r) => r.id == user.id);
+      //  room.users.splice(index, 1);
+      //});
+      //
+      allUsers.delete(user.idCard);
 
       logger.warning(`${user.name} disconnect with reason ${reason}`);
 
