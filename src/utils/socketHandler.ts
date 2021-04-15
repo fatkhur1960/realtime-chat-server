@@ -99,34 +99,17 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       }
     });
 
-    socket.on("sendPrivateMessage", ({ message, opponent }: { message: Message, opponent: User }) => {
-      // get current user private chat room based on opponent id
-      var room = privateChat.getRoom(opponent.idCard)
-      // create chat room for current user based on opponent id
-      if (!room) room = privateChat.createRoom(opponent)
-      room.sendMessage(message)
-
-      // create opponentPrivate chat if not exist
-      var opponentPrivateChat = chatServer.getPrivateChatByUserId(opponent.idCard);
-      if (!opponentPrivateChat) {
-        opponentPrivateChat = chatServer.addPrivateChatByUserId(opponent.idCard);
-      }
-      // create opponent private chat room if not exist
-      var opponentRoom = opponentPrivateChat.getRoom(user.idCard)
-      if (!opponentRoom) opponentRoom = opponentPrivateChat.createRoom(user)
-      opponentRoom.sendMessage(message)
-      opponentRoom.incUnreadCount()
-
+    socket.on("sendPrivateMessage", ({ socketId, message, opponent }: { socketId: string, message: Message, opponent: User }) => {
       // send message to opponent socket id
-      socket.to(opponent.id as string).emit("gotPrivateMessage", { message, user })
+      socket.to(socketId).emit("gotPrivateMessage", { message, user: opponent })
       // update opponent rooms
-      socket.to(opponent.id as string).emit("roomUpdated", { rooms: [] })
+      socket.to(socketId).emit("roomUpdated", { rooms: [] })
       // update current user rooms
       socket.emit("roomUpdated", { rooms: [] })
     });
 
-    socket.on("privateTyping", (opponent: User) => {
-      socket.to(opponent.id as string).emit("typing", { roomId: user.idCard, who: user })
+    socket.on("privateTyping", (socketId) => {
+      socket.to(socketId).emit("typing", { roomId: user.idCard, who: user })
     });
 
     socket.on("typing", (roomId) => {
