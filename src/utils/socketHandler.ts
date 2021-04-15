@@ -18,7 +18,7 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
 
         if (user) {
           logger.info(`[${user.idCard}] ${user.name} - ${user.role} registered`);
-          
+
           allUsers.set(user.idCard, socket.id);
 
           if (user.role === "GURU" || user.role === "BK") {
@@ -87,9 +87,14 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
     // });
 
     socket.on("getSocketId", ({ idCard, role }: { idCard: string, role: any }) => {
-      const socketId = allUsers.get(idCard);
-      if (socketId) {
-        socket.emit("gotSocketId", socketId);
+      if (user) {
+        logger.info(`${user.name} request socket id for ${idCard}`)
+
+        const socketId = allUsers.get(idCard);
+        if (socketId) {
+          logger.info(`[${socketId}] socket id for ${idCard}`)
+          socket.emit("gotSocketId", socketId);
+        }
       }
     });
 
