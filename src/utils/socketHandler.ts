@@ -14,6 +14,7 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
     socket.on(
       "register",
       (regUser: any) => {
+        console.log(regUser)
         user = { ...regUser, idCard: regUser.id_card }
 
         logger.info(`[${user.idCard}] ${user.name} - ${user.role} registered`);
