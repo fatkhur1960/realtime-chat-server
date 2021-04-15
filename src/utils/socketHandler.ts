@@ -7,7 +7,7 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
     var user: User;
     var privateChat: PrivateChat = null;
 
-    logger.info(`New connection - ${user.id}`);
+    logger.info(`New connection - ${socket.id}`);
 
     socket.on(
       "register",
