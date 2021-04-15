@@ -4,21 +4,15 @@ import socketio from 'socket.io';
 
 const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logger) => {
   io.on("connection", (socket) => {
-    const user: User = {
-      id: socket.id,
-      name: null,
-      role: null,
-    };
+    var user: User;
     var privateChat: PrivateChat = null;
 
     logger.info(`New connection - ${user.id}`);
 
     socket.on(
       "register",
-      ({ idCard, username, role }: { idCard: String, username: String, role: String }) => {
-        user.name = username;
-        user.role = role;
-        user.idCard = idCard;
+      (regUser: User) => {
+        user = regUser
 
         logger.info(`[${user.idCard}] ${user.name} - ${user.role} registered`);
 
