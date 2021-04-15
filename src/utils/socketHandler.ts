@@ -7,53 +7,54 @@ const allUsers = new Map();
 const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logger) => {
   io.on("connection", (socket) => {
     var user: User;
-    var privateChat: PrivateChat = null;
 
     logger.info(`New connection - ${socket.id}`);
 
     socket.on(
       "register",
       (regUser: any) => {
-        console.log(regUser)
+
         user = { ...regUser, idCard: regUser.id_card }
 
-        logger.info(`[${user.idCard}] ${user.name} - ${user.role} registered`);
+        if (user) {
+          logger.info(`[${user.idCard}] ${user.name} - ${user.role} registered`);
+          
+          allUsers.set(user.idCard, socket.id);
 
-        // create private chat if not exist
-        // privateChat = chatServer.getPrivateChatByUserId(user.idCard)
-        // if (!privateChat) {
-        //   privateChat = chatServer.addPrivateChatByUserId(user.idCard);
-        //}
-
-        allUsers.set(user.idCard, socket.id);
-
-        if (user.role === "GURU" || user.role === "BK") {
-          socket.broadcast.emit("teacherOnline", user);
-          // chatServer.addTeacher(user)
-        } else {
-          socket.broadcast.emit("studentOnline", user);
-          //chatServer.addStudent(user)
+          if (user.role === "GURU" || user.role === "BK") {
+            socket.broadcast.emit("teacherOnline", user);
+            chatServer.addTeacher(user)
+          } else {
+            socket.broadcast.emit("studentOnline", user);
+            chatServer.addStudent(user)
+          }
         }
       }
     );
 
     socket.on("getStats", () => {
-      logger.info(`${user.name} request stats`);
-      var onlineUsers = chatServer.onlineStudents;
-      if (user.role === 'SISWA') {
-        onlineUsers = chatServer.onlineTeachers;
+      if (user) {
+        logger.info(`${user.name} request stats`);
+        var onlineUsers = chatServer.onlineStudents;
+        if (user.role === 'SISWA') {
+          onlineUsers = chatServer.onlineTeachers;
+        }
+        socket.emit("statsLoaded", { rooms: [], onlineUsers })
       }
-      socket.emit("statsLoaded", { rooms: [], onlineUsers })
     })
 
     socket.on("join", (roomId: string) => {
-      logger.info(`${user.name} join to room ${roomId}`);
-      socket.join(roomId);
+      if (user) {
+        logger.info(`${user.name} join to room ${roomId}`);
+        socket.join(roomId);
+      }
     });
 
     socket.on("leave", (roomId: string) => {
-      logger.info(`${user.name} leave room '${roomId}'`);
-      socket.leave(roomId);
+      if (user) {
+        logger.info(`${user.name} leave room '${roomId}'`);
+        socket.leave(roomId);
+      }
     });
 
     socket.on(
@@ -86,17 +87,6 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
     // });
 
     socket.on("getSocketId", ({ idCard, role }: { idCard: string, role: any }) => {
-      //var user: User;
-      //if (role === 'GURU' || role === 'BK') {
-      //  user = chatServer.onlineTeachers.find((u) => u.idCard === idCard)
-      //} else {
-      //  user = chatServer.onlineStudents.find((u) => u.idCard === idCard)
-      //}
-
-      //if (user) {
-      //  socket.emit("gotSocketId", user.id)
-      //}
-
       const socketId = allUsers.get(idCard);
       if (socketId) {
         socket.emit("gotSocketId", socketId);
@@ -113,30 +103,31 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
     });
 
     socket.on("privateTyping", (socketId) => {
-      socket.to(socketId).emit("typing", { roomId: user.idCard, who: user })
+      if (user) {
+        socket.to(socketId).emit("typing", { roomId: user.idCard, who: user })
+      }
     });
 
     socket.on("typing", (roomId) => {
-      socket.broadcast.to(roomId).emit("typing", { roomId, who: user });
-      socket.broadcast.emit("bcTyping", { roomId, who: user });
+      if (user) {
+        socket.broadcast.to(roomId).emit("typing", { roomId, who: user });
+        socket.broadcast.emit("bcTyping", { roomId, who: user });
+      }
     });
 
     socket.on("disconnect", (reason) => {
-      //chatServer.rooms.forEach((room) => {
-      //  const index = room.users.findIndex((r) => r.id == user.id);
-      //  room.users.splice(index, 1);
-      //});
-      //
-      allUsers.delete(user.idCard);
+      if (user) {
+        allUsers.delete(user.idCard);
 
-      logger.warning(`${user.name} disconnect with reason ${reason}`);
+        logger.warning(`${user.name} disconnect with reason ${reason}`);
 
-      if (user.role === "GURU" || user.role === "BK") {
-        socket.broadcast.emit("teacherOffline", user);
-        chatServer.removeTeacher(user)
-      } else {
-        socket.broadcast.emit("studentOffline", user);
-        chatServer.removeStudent(user)
+        if (user.role === "GURU" || user.role === "BK") {
+          socket.broadcast.emit("teacherOffline", user);
+          chatServer.removeTeacher(user)
+        } else {
+          socket.broadcast.emit("studentOffline", user);
+          chatServer.removeStudent(user)
+        }
       }
     });
   });
