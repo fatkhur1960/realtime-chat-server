@@ -2,6 +2,8 @@ import { Message, ChatServer, User, PrivateChat } from './chat';
 import Logger from '@ptkdev/logger';
 import socketio from 'socket.io';
 
+const allUsers = new Map();
+
 const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logger) => {
   io.on("connection", (socket) => {
     var user: User;
@@ -17,17 +19,19 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
         logger.info(`[${user.idCard}] ${user.name} - ${user.role} registered`);
 
         // create private chat if not exist
-        privateChat = chatServer.getPrivateChatByUserId(user.idCard)
-        if (!privateChat) {
-          privateChat = chatServer.addPrivateChatByUserId(user.idCard);
-        }
+        // privateChat = chatServer.getPrivateChatByUserId(user.idCard)
+        // if (!privateChat) {
+        //   privateChat = chatServer.addPrivateChatByUserId(user.idCard);
+        //}
+
+        allUsers.set(user.idCard, socket.id);        
 
         if (user.role === "GURU" || user.role === "BK") {
           socket.broadcast.emit("teacherOnline", user);
-          chatServer.addTeacher(user)
+          // chatServer.addTeacher(user)
         } else {
           socket.broadcast.emit("studentOnline", user);
-          chatServer.addStudent(user)
+          //chatServer.addStudent(user)
         }
       }
     );
@@ -80,16 +84,21 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       }
     });
 
-    socket.on("getSocketId", ({ idCard, role }: { idCard: string, role: string }) => {
-      var user: User;
-      if (role === 'GURU' || role === 'BK') {
-        user = chatServer.onlineTeachers.find((u) => u.idCard === idCard)
-      } else {
-        user = chatServer.onlineStudents.find((u) => u.idCard === idCard)
-      }
+    socket.on("getSocketId", ({ idCard, role }: { idCard: string, role: any }) => {
+      //var user: User;
+      //if (role === 'GURU' || role === 'BK') {
+      //  user = chatServer.onlineTeachers.find((u) => u.idCard === idCard)
+      //} else {
+      //  user = chatServer.onlineStudents.find((u) => u.idCard === idCard)
+      //}
 
-      if (user) {
-        socket.emit("gotSocketId", user.id)
+      //if (user) {
+      //  socket.emit("gotSocketId", user.id)
+      //}
+      
+      const socketId = allUsers.get(idCard);
+      if(socketId) {
+        socket.emit("gotSocketId", socketId);
       }
     });
 
