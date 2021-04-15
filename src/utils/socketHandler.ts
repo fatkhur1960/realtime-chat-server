@@ -13,8 +13,8 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
 
     socket.on(
       "register",
-      (regUser: User) => {
-        user = regUser
+      (regUser: any) => {
+        user = { ...regUser, idCard: regUser.id_card }
 
         logger.info(`[${user.idCard}] ${user.name} - ${user.role} registered`);
 
@@ -24,7 +24,7 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
         //   privateChat = chatServer.addPrivateChatByUserId(user.idCard);
         //}
 
-        allUsers.set(user.idCard, socket.id);        
+        allUsers.set(user.idCard, socket.id);
 
         if (user.role === "GURU" || user.role === "BK") {
           socket.broadcast.emit("teacherOnline", user);
@@ -95,9 +95,9 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       //if (user) {
       //  socket.emit("gotSocketId", user.id)
       //}
-      
+
       const socketId = allUsers.get(idCard);
-      if(socketId) {
+      if (socketId) {
         socket.emit("gotSocketId", socketId);
       }
     });
