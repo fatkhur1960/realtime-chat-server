@@ -22,10 +22,10 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
           allUsers.set(user.idCard, socket.id);
 
           if (user.role === "GURU" || user.role === "BK") {
-            socket.broadcast.emit("teacherOnline", user);
+            socket.broadcast.emit("teacherOnline", { user, socketId: socket.id });
             chatServer.addTeacher(user)
           } else {
-            socket.broadcast.emit("studentOnline", user);
+            socket.broadcast.emit("studentOnline", { user, socketId: socket.id });
             chatServer.addStudent(user)
           }
         }
@@ -98,9 +98,9 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       }
     });
 
-    socket.on("sendPrivateMessage", ({ socketId, message, opponent }: { socketId: string, message: Message, opponent: User }) => {
+    socket.on("sendPrivateMessage", ({ socketId, message, opponent, senderId }: { socketId: string, message: Message, senderId: any, opponent: User }) => {
       // send message to opponent socket id
-      socket.to(socketId).emit("gotPrivateMessage", { message, user: opponent })
+      socket.to(socketId).emit("gotPrivateMessage", { message, user: opponent, senderId })
       // update opponent rooms
       socket.to(socketId).emit("roomUpdated", { rooms: [] })
       // update current user rooms
