@@ -63,26 +63,26 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       }
     );
 
-    socket.on("loadPrivateMessages", (opponentId: string) => {
-      const room = privateChat.getRoom(opponentId)
-      if (room) {
-        socket.emit("privateMessagesLoaded", { messages: room != null ? room.messages : [] })
-        if (room.unreadCount > 0) {
-          room.resetUnreadCount()
-          socket.emit("roomUpdated", { rooms: chatServer.rooms.concat(privateChat.rooms) })
-        }
-      }
-    });
+    // socket.on("loadPrivateMessages", (opponentId: string) => {
+    //   const room = privateChat.getRoom(opponentId)
+    //   if (room) {
+    //     socket.emit("privateMessagesLoaded", { messages: room != null ? room.messages : [] })
+    //     if (room.unreadCount > 0) {
+    //       room.resetUnreadCount()
+    //       socket.emit("roomUpdated", { rooms: chatServer.rooms.concat(privateChat.rooms) })
+    //     }
+    //   }
+    // });
 
-    socket.on("resetCount", (opponentId: string) => {
-      const room = privateChat.getRoom(opponentId)
-      if (room) {
-        if (room.unreadCount > 0) {
-          room.resetUnreadCount()
-          socket.emit("roomUpdated", { rooms: chatServer.rooms.concat(privateChat.rooms) })
-        }
-      }
-    });
+    // socket.on("resetCount", (opponentId: string) => {
+    //   const room = privateChat.getRoom(opponentId)
+    //   if (room) {
+    //     if (room.unreadCount > 0) {
+    //       room.resetUnreadCount()
+    //       socket.emit("roomUpdated", { rooms: chatServer.rooms.concat(privateChat.rooms) })
+    //     }
+    //   }
+    // });
 
     socket.on("getSocketId", ({ idCard, role }: { idCard: string, role: any }) => {
       //var user: User;
