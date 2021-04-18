@@ -62,6 +62,7 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       ({ message, roomId }: { message: Message, roomId: string }) => {
         socket.broadcast.to(roomId).emit("message", message);
         socket.broadcast.emit("roomUpdated", { rooms: [] });
+        socket.emit("roomUpdated", { rooms: [] });
       }
     );
 
