@@ -98,9 +98,9 @@ const handleSocket = (io: socketio.Server, chatServer: ChatServer, logger: Logge
       }
     });
 
-    socket.on("sendPrivateMessage", ({ socketId, message, opponent, senderId }: { socketId: string, message: Message, senderId: any, opponent: User }) => {
+    socket.on("sendPrivateMessage", ({ socketId, message, opponent, senderId, conversationId }: { socketId: string, message: Message, senderId: any, opponent: User, conversationId: number }) => {
       // send message to opponent socket id
-      socket.to(socketId).emit("gotPrivateMessage", { message, user: opponent, senderId })
+      socket.to(socketId).emit("gotPrivateMessage", { message, user: opponent, senderId, conversationId })
       // update opponent rooms
       socket.to(socketId).emit("roomUpdated", { rooms: [] })
       // update current user rooms
