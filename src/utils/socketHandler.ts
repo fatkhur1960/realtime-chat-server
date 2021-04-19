@@ -60,6 +60,7 @@ const handleSocket = (
     socket.on(
       "sendMessage",
       ({ message, roomId }: { message: Message; roomId: string }) => {
+        console.log(message);
         socket.broadcast.to(roomId).emit("message", message);
         socket.broadcast.emit("roomUpdated", { rooms: [] });
         socket.emit("roomUpdated", { rooms: [] });
@@ -120,6 +121,7 @@ const handleSocket = (
         subject: any;
       }) => {
         // send message to opponent socket id
+        console.log(message);
         socket
           .to(socketId)
           .emit("gotPrivateMessage", {
