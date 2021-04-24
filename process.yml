@@ -1,0 +1,11 @@
+apps:
+  - script: 'build/server.js'
+    name: 'instance1'
+    env:
+      NODE_ENV: production
+      PORT: 8081
+  # - script: 'build/server.js'
+  #   name: 'instance2'
+  #   env:
+  #     NODE_ENV: production
+  #     PORT: 8082

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import socketio from 'socket.io';
 import http from 'http';
 
@@ -13,9 +13,13 @@ const io = new socketio.Server(server);
 const logger = new Logger();
 const chatServer = new ChatServer(initRooms());
 
-const port = process.env.PORT || 8888;
+const port = process.env.PORT || 8080;
 
 handleSocket(io, chatServer, logger)
+
+app.get("/", (req: Request, res: Response) => {
+  res.send("Socket running");
+});
 
 server.listen(port, () => {
   logger.info(`Listening on ${port}`);
