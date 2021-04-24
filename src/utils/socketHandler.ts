@@ -59,9 +59,9 @@ const handleSocket = (
 
     socket.on(
       "sendMessage",
-      ({ message, roomId }: { message: Message; roomId: string }) => {
+      ({ message, roomId, room }: { message: Message; roomId: string; room: any }) => {
         console.log(message);
-        socket.broadcast.to(roomId).emit("message", message);
+        socket.broadcast.to(roomId).emit("message", {message, room, roomId});
         socket.broadcast.emit("roomUpdated", { rooms: [] });
         socket.emit("roomUpdated", { rooms: [] });
       }
